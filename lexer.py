@@ -15,6 +15,9 @@ class Lexer:
         self.line = 1
         self.column = 1
 
+        self.curr_iden = ""
+
+        self.is_curr_iden = False
         self.is_eof = False
 
     def advance(self):
@@ -23,34 +26,63 @@ class Lexer:
         if self.index >= len(self.code):
             self.is_eof = True
             return ""
-        if self.code[self.index] == "\n":
+        is_new_line = False
+        while self.code[self.index] == "\n":
             self.line += 1
             self.column = 1
-            return self.advance()
+            self.index += 1
+            is_new_line = True
+        if is_new_line:
+            self.index -= 1
         return self.code[self.index]
 
     def peek(self):
         return self.code[self.index]
     
+    def prev(self):
+        return self.code[self.index - 1] if self.index != 0 else ""
+
+    def is_space(self, char: str) -> bool:
+        return char.isspace() or not char
+
     def get_loc(self) -> Loc:
         return Loc(self.line, self.column, self.index, self.file_name)
 
     def check_keyword(self, keyword: str):
         if self.code[self.index:self.index + len(keyword)] == keyword:
             self.index += len(keyword) - 1
+            self.column += len(keyword) - 1
+            self.advance()
             return True
         return False
 
     def check_keywords(self) -> Token | None:
+        if not self.is_space(self.prev()):
+            return
+
+        loc = (self.line, self.column, self.index)
+
         for keyword in self.KEYWORDS:
             if self.check_keyword(keyword):
-                return Token(TokenType.KEYWORD, keyword, self.get_loc())
+                return Token(TokenType.KEYWORD, keyword, Loc(*loc, self.file_name))
 
     def lex(self) -> list[Token]:
         while not self.is_eof:
+            self.is_curr_iden = False
+
             keyword = self.check_keywords()
             if keyword is not None:
                 self.tokens.append(keyword)
+            else:
+                if not self.is_space(self.peek()):
+                    self.is_curr_iden = True
+                    self.curr_iden += self.peek()
             self.advance()
+
+            if not self.is_curr_iden and self.curr_iden:
+                self.tokens.append(Token(TokenType.IDENTIFIER, self.curr_iden, self.get_loc()))
+                self.curr_iden = ""
+        if self.curr_iden:
+            self.tokens.append(Token(TokenType.IDENTIFIER, self.curr_iden, self.get_loc()))
         
         return self.tokens
