@@ -33,20 +33,31 @@ class Lexer:
             self.index += 1
             is_new_line = True
         if is_new_line:
+            self.column = 1
             self.index -= 1
         return self.code[self.index]
 
-    def peek(self):
+    def peek(self) -> str:
         return self.code[self.index]
     
-    def prev(self):
+    def prev(self) -> str:
         return self.code[self.index - 1] if self.index != 0 else ""
+
+    def next(self) -> str:
+        return self.code[self.index + 1] if self.index + 1 < len(self.code) else ""
 
     def is_space(self, char: str) -> bool:
         return char.isspace() or not char
 
     def get_loc(self) -> Loc:
         return Loc(self.line, self.column, self.index, self.file_name)
+
+    def lex_int(self) -> Token:
+        loc = self.get_loc()
+        tok = self.peek()
+        while self.next().isdigit():
+            tok += self.advance()
+        return Token(TokenType.INTEGER, tok, loc)
 
     def check_keyword(self, keyword: str):
         if self.code[self.index:self.index + len(keyword)] == keyword:
@@ -73,6 +84,8 @@ class Lexer:
             keyword = self.check_keywords()
             if keyword is not None:
                 self.tokens.append(keyword)
+            elif not self.curr_iden and self.peek().isdigit():
+                self.tokens.append(self.lex_int())
             else:
                 if not self.is_space(self.peek()):
                     self.is_curr_iden = True
