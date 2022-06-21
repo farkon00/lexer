@@ -5,7 +5,7 @@ from printer import print_tokens
 
 def main():
     with open(sys.argv[1], "r") as f:
-        lexer = Lexer(f.read())
+        lexer = Lexer(f.read(), sys.argv[1])
 
     tokens = lexer.lex()
     print_tokens(tokens)

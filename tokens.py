@@ -10,6 +10,7 @@ class TokenType(Enum):
 class Loc:
     line: int
     column: int
+    index: int
     file: str
 
     def __str__(self):
