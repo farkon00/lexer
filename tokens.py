@@ -5,6 +5,17 @@ class TokenType(Enum):
     IDENTIFIER = auto()
     KEYWORD = auto()
     INTEGER = auto()
+    SEMICOLON = auto()
+    OPEN_BLOCK = auto()
+    CLOSE_BLOCK = auto()
+    OPEN_PAREN = auto()
+    CLOSE_PAREN = auto()
+    OPEN_BRACKET = auto()
+    CLOSE_BRACKET = auto()  
+    COMMA = auto()
+    ASSIGN = auto()
+    DOT = auto()
+    OPERATOR = auto()
 
 @dataclass
 class Loc:

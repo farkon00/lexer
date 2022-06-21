@@ -4,6 +4,20 @@ class Lexer:
     KEYWORDS = [
         "if", "else", "while", "func", "return", "var", "import"
     ]
+    OPERATORS = [
+        "+", "-", "*", "/", "&", "|", "!", "<", ">", "==", "="
+    ]
+    SPECIAL_SYMBOLS = {
+        "{" : TokenType.OPEN_BLOCK, 
+        "}" : TokenType.CLOSE_BLOCK, 
+        "(" : TokenType.OPEN_PAREN,
+        ")" : TokenType.CLOSE_PAREN,
+        "[" : TokenType.OPEN_BRACKET,
+        "]" : TokenType.CLOSE_BRACKET,
+        "." : TokenType.DOT,
+        "," : TokenType.COMMA,
+        ";" : TokenType.SEMICOLON,
+    }
 
     def __init__(self, code, file_name):
         self.code = code
@@ -33,7 +47,6 @@ class Lexer:
             self.index += 1
             is_new_line = True
         if is_new_line:
-            self.column = 1
             self.index -= 1
         return self.code[self.index]
 
@@ -81,11 +94,16 @@ class Lexer:
         while not self.is_eof:
             self.is_curr_iden = False
 
+            tok = None
             keyword = self.check_keywords()
             if keyword is not None:
-                self.tokens.append(keyword)
+                tok = keyword
+            elif self.peek() in self.OPERATORS:
+                tok = Token(TokenType.OPERATOR, self.peek(), self.get_loc())
+            elif self.peek() in self.SPECIAL_SYMBOLS:
+                tok = Token(self.SPECIAL_SYMBOLS[self.peek()], self.peek(), self.get_loc())
             elif not self.curr_iden and self.peek().isdigit():
-                self.tokens.append(self.lex_int())
+                tok = self.lex_int()
             else:
                 if not self.is_space(self.peek()):
                     self.is_curr_iden = True
@@ -95,6 +113,9 @@ class Lexer:
             if not self.is_curr_iden and self.curr_iden:
                 self.tokens.append(Token(TokenType.IDENTIFIER, self.curr_iden, self.get_loc()))
                 self.curr_iden = ""
+
+            if tok is not None:
+                self.tokens.append(tok)
         if self.curr_iden:
             self.tokens.append(Token(TokenType.IDENTIFIER, self.curr_iden, self.get_loc()))
         
