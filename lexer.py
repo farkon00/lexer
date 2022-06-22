@@ -93,7 +93,7 @@ class Lexer:
     def lex(self) -> list[Token]:
         while not self.is_eof:
             self.is_curr_iden = False
-
+            # TODO: Lex string literals
             tok = None
             keyword = self.check_keywords()
             if keyword is not None:
