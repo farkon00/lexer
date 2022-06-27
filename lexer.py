@@ -90,6 +90,14 @@ class Lexer:
             if self.check_keyword(keyword):
                 return Token(TokenType.KEYWORD, keyword, Loc(*loc, self.file_name))
 
+    def lex_string(self) -> Token:
+        loc = self.get_loc()
+        tok = ""
+        while self.next() != "\"":
+            tok += self.advance()
+        self.advance()
+        return Token(TokenType.STRING, tok, loc)
+
     def lex(self) -> list[Token]:
         while not self.is_eof:
             self.is_curr_iden = False
@@ -102,6 +110,8 @@ class Lexer:
                 tok = Token(TokenType.OPERATOR, self.peek(), self.get_loc())
             elif self.peek() in self.SPECIAL_SYMBOLS:
                 tok = Token(self.SPECIAL_SYMBOLS[self.peek()], self.peek(), self.get_loc())
+            elif self.peek() == "\"":
+                tok = self.lex_string()
             elif not self.curr_iden and self.peek().isdigit():
                 tok = self.lex_int()
             else:

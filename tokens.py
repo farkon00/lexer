@@ -15,6 +15,7 @@ class TokenType(Enum):
     COMMA = auto()
     ASSIGN = auto()
     DOT = auto()
+    STRING = auto()
     OPERATOR = auto()
 
 @dataclass
